@@ -1,0 +1,14 @@
+# Mac.
+.DS_STORE
+
+# Node.
+node_modules
+npm-debug.log
+
+# Yarn
+yarn.lock
+yarn-error.log
+
+# local testing files
+networks
+sendSizes

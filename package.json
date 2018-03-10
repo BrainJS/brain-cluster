@@ -1,0 +1,38 @@
+{
+  "name": "brain-cluster",
+  "version": "0.0.0",
+  "description": "Brain.js in a distributed system.  Train in async on your local machine, in async accross many machines, or on something like a Beowulf cluster.",
+  "main": "cluster.js",
+  "scripts": {
+    "down": "klyng --beacon-down",
+    "up": "klyng --beacon-up",
+    "start": "klyng -n 6 cluster.js",
+    "example": "klyng -n 6 example.js",
+    "test-sizes": "klyng -n 2 test-size.js && yarn down && klyng -n 4 test-size.js && yarn down && klyng -n 8 test-size.js && yarn down && klyng -n 16 test-size.js && yarn down && klyng -n 32 test-size.js && yarn down && klyng -n 64 test-size.js && yarn down && klyng -n 128 test-size.js",
+    "cluster": "klyng -n 6 cluster.js -m machines.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/brainjs/brain-cluster.git"
+  },
+  "keywords": [
+    "ai",
+    "artificial-intelligence",
+    "distributed-computing",
+    "distributed-neural-network",
+    "cluster",
+    "neural-networks",
+    "machine-learning"
+  ],
+  "author": "The Brain.js Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BrainJS/brain-cluster/issues"
+  },
+  "homepage": "https://github.com/BrainJS/brain-cluster#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "brain.js": "^1.1.2",
+    "klyng": "^1.0.5"
+  }
+}
