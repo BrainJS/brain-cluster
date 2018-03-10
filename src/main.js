@@ -92,41 +92,42 @@ function combineNetworks (networks) {
       trainOpts: networks[0].trainOpts
     }
 
-    let innerLayers = networks.map(net => {
+    let outputLayerGroupings = []
+    let netsHiddenLayers = networks.map(net => {
       let layersCopy = net.layers.concat([]);
-      layersCopy.shift();
-      layersCopy.pop();
+      layersCopy.shift();// empty input layer
       return layersCopy;
     })
 
-    // TODO: Parse and add the network
-    // let innerLayerMap = [];
-    // innerLayers.forEach((layer, i) => {
-      
-    //   for(var key in layer) {
-    //     layer[key]
-    //   }
-    // })
+    let newLayers = []
+    let newNetLayers = netsHiddenLayers.shift(); // take first network's results
 
-    // console.log(JSON.stringify(innerLayerMap));
-    // console.log('######################################################')
-    // console.log('######################################################')
-    // console.log('######################################################')
-    // console.log(JSON.stringify(innerLayers));
+    log('combining');
 
-    // for (let i = 1; i < network[0].length - 1; ++i) {
-    //   for (let layer in networks[0].layers[i]) {
-    //     for (let j = 0; j < networks.length; ++j) {
-
-    //     }
-    //   }
-    // }
+    console.log(Object.keys(newNetLayers));
+    Object.keys(newNetLayers).forEach(iLayer => {
+      Object.keys(newNetLayers[iLayer]).forEach(iNeuron => {
+        for(var iNet = 0; iNet < netsHiddenLayers.length; ++iNet) {
+          newNetLayers[iLayer][iNeuron].bias += netsHiddenLayers[iNet][iLayer][iNeuron].bias;
+          Object.keys(newNetLayers[iLayer][iNeuron].weights).forEach(iWeight => {
+            newNetLayers[iLayer][iNeuron].weights[iWeight] += netsHiddenLayers[iNet][iLayer][iNeuron].weights[iWeight];
+          })
+        }
+      })
+    });
+    
+    newJson.layers = newJson.layers.concat(newNetLayers);
+    resolve(newJson);
   });
 }
 
-function testNewNetwork (newNetwork) {
+function testNewNetwork (json) {
   return new Promise ((resolve, reject) => {
-
+    var net = new brain.NeuralNetwork().fromJSON(json)
+    trainSet.forEach(v => {
+      var results = net.run(v.input);
+      log(`${JSON.stringify(v.output)} => ${JSON.stringify(results)}`);
+    })
   });
 }
 
