@@ -1,5 +1,6 @@
 var brain = require('brain.js');
 var fs = require('fs');
+var colors = require('colors');
 
 module.exports = {
   run: function (klyng) {
@@ -35,7 +36,7 @@ module.exports = {
         .then(combineNetworks)
         .then(testNewNetwork)
         .catch(err => {
-          log(`${klyng.rank()}, error => ${err.stack}`);
+          log(`${klyng.rank()}`.red + ` error => ${err.stack}`.gray);
           reject(err);
         });
     })
@@ -43,7 +44,7 @@ module.exports = {
 };
 
 function sendTask (klyng, rank, json, trainingData) {
-  log(`sending task to ${rank}`)
+  log(`sending task to ${rank}`.green)
   klyng.send({
     to: rank,
     data: JSON.stringify({
@@ -51,13 +52,13 @@ function sendTask (klyng, rank, json, trainingData) {
       trainingData: trainingData
     })
   });
-  log(`task sent to ${rank}`)
+  log(`task sent to ${rank}`.green)
 }
 
 function trainMe (klyng, net, trainingData) {
   return new Promise((resolve, reject) => {
     const trainRes = net.train(trainingData, { 
-      callback: (res) => { log(`${klyng.rank()}, training => [${res.iterations}, ${res.error}]`); }
+      callback: (res) => { log(`${klyng.rank()}`.red + ` training => [${res.iterations}, ${res.error}]`.gray); }
     });
     resolve({
       rank: 0,
@@ -71,10 +72,13 @@ function trainMe (klyng, net, trainingData) {
 function sanityCheckFirstNetwork (res) {
   return new Promise((resolve, reject) => {
     var net = new brain.NeuralNetwork().fromJSON(res.json);
+    count = 0;
     res.trainingData.forEach(d => {
       var r = net.run(d.input);
-      log(`${getMax(r).key} should be ${getMax(d.output).key}`);
+      
+      if (getMax(r).key !== getMax(d.output).key) count++;
     })
+    log (`${count} mistakes of ${res.trainingData.length}`.yellow);
     delete res.trainingData;
     resolve(res);
   })
@@ -93,7 +97,7 @@ function handleResults(values) {
   return new Promise ((resolve, reject) => {
     log(`\n\t${values.map(v => {
       return '' + v.rank + ' => { iterations: ' + v.trainRes.iterations + ', error: ' + v.trainRes.error + '}'; 
-    }).join('\n\t')}`);
+    }).join('\n\t')}`.bgMagenta.black.bold);
     resolve(values.map(v => v.json));
   })
 }
@@ -140,7 +144,9 @@ function testNewNetwork (json) {
       var results = net.run(v.input);
       var expected = getMax(v.output);
       var actual = getMax(results);
-      console.log(`(expected: ${expected.key}) (actual: ${actual.key}) => ${JSON.stringify(results)}`);
+      (actual.key === expected.key) ? 
+        console.log((`  ${actual.key} === ${expected.key} -> ${JSON.stringify(results)}`).green) :
+        console.log((`  ${actual.key} !== ${expected.key} -> ${JSON.stringify(results)}`).red);
     })
     resolve();
   });
@@ -227,5 +233,5 @@ function fuzz(input) {
 
 function log (str) {
   var now = new Date();
-  console.log(`\t[${now.getMinutes()}:${now.getSeconds()}:${now.getMilliseconds()}] ${str}`);
+  console.log(`[${now.getMinutes()}:${now.getSeconds()}:${now.getMilliseconds()}]`.gray + str);
 }

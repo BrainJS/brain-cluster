@@ -33,6 +33,7 @@
   "devDependencies": {},
   "dependencies": {
     "brain.js": "^1.1.2",
+    "colors": "^1.2.0",
     "klyng": "^1.0.5"
   }
 }
