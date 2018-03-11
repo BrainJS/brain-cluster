@@ -21,7 +21,10 @@ module.exports = {
       }
 
       let promises = [];
-      promises.push(trainMe(klyng, net, trainSet.slice(0, partition)));
+      promises.push(
+        trainMe(klyng, net, trainSet.slice(0, partition))
+          .then (sanityCheckFirstNetwork)
+      );
       for (var p = 1; p < klyng.size(); ++p) {
         promises.push(listenForResults(klyng, p));
       }
@@ -58,9 +61,22 @@ function trainMe (klyng, net, trainingData) {
     });
     resolve({
       rank: 0,
+      trainingData: trainingData,
       trainRes: trainRes,
       json: net.toJSON()
     });
+  })
+}
+
+function sanityCheckFirstNetwork (res) {
+  return new Promise((resolve, reject) => {
+    var net = new brain.NeuralNetwork().fromJSON(res.json);
+    res.trainingData.forEach(d => {
+      var r = net.run(d.input);
+      log(`${getMax(r).key} should be ${getMax(d.output).key}`);
+    })
+    delete res.trainingData;
+    resolve(res);
   })
 }
 
