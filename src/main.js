@@ -102,9 +102,6 @@ function combineNetworks (networks) {
     let newLayers = []
     let newNetLayers = netsHiddenLayers.shift(); // take first network's results
 
-    log('combining');
-
-    console.log(Object.keys(newNetLayers));
     Object.keys(newNetLayers).forEach(iLayer => {
       Object.keys(newNetLayers[iLayer]).forEach(iNeuron => {
         for(var iNet = 0; iNet < netsHiddenLayers.length; ++iNet) {
@@ -115,7 +112,6 @@ function combineNetworks (networks) {
         }
       })
     });
-    
     newJson.layers = newJson.layers.concat(newNetLayers);
     resolve(newJson);
   });
@@ -126,9 +122,20 @@ function testNewNetwork (json) {
     var net = new brain.NeuralNetwork().fromJSON(json)
     trainSet.forEach(v => {
       var results = net.run(v.input);
-      log(`${JSON.stringify(v.output)} => ${JSON.stringify(results)}`);
+      var expected = getMax(v.output);
+      var actual = getMax(results);
+      console.log(`(expected: ${expected.key}) (actual: ${actual.key}) => ${JSON.stringify(results)}`);
     })
+    resolve();
   });
+}
+
+function getMax(res) {
+  return Object.keys(res).reduce((result, key) => {
+    if (!result) return { key: key, value: res[key] };
+    if (result.value < res[key]) return {key: key, value: res[key] };
+    return result;
+  }, {key:'', value: -Infinity});
 }
 
 let a = character(
